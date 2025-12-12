@@ -2,11 +2,7 @@ name: Android CI
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-  pull_request:
-  
+
 permissions:
   contents: write
   
@@ -35,6 +31,23 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build debug apk
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: assembleDebug --scan --info
+          distributions-cache-enabled: true
+          dependencies-cache-enabled: true
+          configuration-cache-enabled: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: "Build ${{ github.run_number }}"
+          draft: false
+          prerelease: true
+          files: app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      - name: Build debug apk
         uses: gradle/gradle-build-action@v3
         with:
           arguments: assembleDebug --scan --info
